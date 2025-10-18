@@ -58,28 +58,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 "#;
 
     // DTSをDTBに変換してfirmwareとしてアップロード
-    let (dtb_result, dtb_data) = fpga_ctl.dts_to_dtb(dts.to_string()).await?;
+    let (dtb_result, dtb_data) = fpga_ctl.dts_to_dtb(dts).await?;
     if !dtb_result {
         eprintln!("Failed to convert DTS to DTB");
         return Err("DTS to DTB conversion failed".into());
     }
     
-    let dtb_upload_result = fpga_ctl.upload_firmware("kv260_blinking_led_ps.dtbo".to_string(), dtb_data).await?;
+    let dtb_upload_result = fpga_ctl.upload_firmware("kv260_blinking_led_ps.dtbo", dtb_data).await?;
     println!("DTB upload result: {}", dtb_upload_result);
 
     // bitstreamファイルをアップロード
     println!("Bitstream upload start");
     let bit_upload_result = fpga_ctl.upload_firmware_file(
-        "kv260_blinking_led_ps.bit".to_string(),
+        "kv260_blinking_led_ps.bit",
         "../bitstream/kv260_blinking_led_ps.bit"
     ).await?;
     println!("Bitstream upload result: {}", bit_upload_result);
     
     // アップロードしたbitstreamファイルをbinファイルに変換
     let bin_convert_result = fpga_ctl.bitstream_to_bin(
-        "kv260_blinking_led_ps.bit".to_string(),
-        "kv260_blinking_led_ps.bit.bin".to_string(),
-        "zynqmp".to_string(),
+        "kv260_blinking_led_ps.bit",
+        "kv260_blinking_led_ps.bit.bin",
+        "zynqmp",
     ).await?;
     println!("Bitstream to bin conversion result: {}", bin_convert_result);
 
@@ -88,11 +88,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Unload result: {}", unload_result);
     
     // DTBOをロード
-    let load_dtbo_result = fpga_ctl.load_dtbo("kv260_blinking_led_ps.dtbo".to_string()).await?;
+    let load_dtbo_result = fpga_ctl.load_dtbo("kv260_blinking_led_ps.dtbo").await?;
     println!("Load DTBO result: {}", load_dtbo_result);
 
     // /dev/memをmmapしてLED0を点滅させる
-    let (mmap_result, accessor_id) = fpga_ctl.open_mmap_simple("/dev/mem", 0xa0000000, 0x1000).await?;
+    let (mmap_result, accessor_id) = fpga_ctl.open_mmap("/dev/mem", 0xa0000000, 0x1000, 8).await?;
     if !mmap_result {
         eprintln!("Failed to open memory map");
         return Err("Memory map failed".into());
@@ -119,20 +119,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Close result: {}", close_result);
 
     // 後始末：アップロードしたファイルを削除
-    let remove_dtbo_result = fpga_ctl.remove_firmware("kv260_blinking_led_ps.dtbo".to_string()).await?;
+    let remove_dtbo_result = fpga_ctl.remove_firmware("kv260_blinking_led_ps.dtbo").await?;
     println!("Remove DTBO result: {}", remove_dtbo_result);
     
-    let remove_bit_result = fpga_ctl.remove_firmware("kv260_blinking_led_ps.bit".to_string()).await?;
+    let remove_bit_result = fpga_ctl.remove_firmware("kv260_blinking_led_ps.bit").await?;
     println!("Remove bitstream result: {}", remove_bit_result);
     
-    let remove_bin_result = fpga_ctl.remove_firmware("kv260_blinking_led_ps.bit.bin".to_string()).await?;
+    let remove_bin_result = fpga_ctl.remove_firmware("kv260_blinking_led_ps.bit.bin").await?;
     println!("Remove bin result: {}", remove_bin_result);
 
     // 元の設定に戻す
     let final_unload_result = fpga_ctl.unload_all().await?;
     println!("Final unload result: {}", final_unload_result);
     
-    let (load_starter_result, _slot) = fpga_ctl.load("k26-starter-kits".to_string()).await?;
+    let (load_starter_result, _slot) = fpga_ctl.load("k26-starter-kits").await?;
     println!("Load k26-starter-kits result: {}", load_starter_result);
 
     println!("Blinking LED test completed successfully!");

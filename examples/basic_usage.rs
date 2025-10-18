@@ -12,11 +12,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Reset result: {}", reset_result);
 
     // Load a firmware
-    let (load_result, slot) = client.load("sample_firmware".to_string()).await?;
+    let (load_result, slot) = client.load("sample_firmware").await?;
     println!("Load result: {}, slot: {}", load_result, slot);
 
     // Open UIO device
-    let (open_result, id) = client.open_uio("sample_device".to_string(), 4).await?;
+    let (open_result, id) = client.open_uio("sample_device", 4).await?;
     println!("Open UIO result: {}, id: {}", open_result, id);
 
     if open_result {

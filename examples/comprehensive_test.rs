@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Try to load a firmware (this may fail if firmware doesn't exist)
     println!("\n=== Testing Firmware Operations ===");
-    match client.load("kv260_blinking_led_ps".to_string()).await {
+    match client.load("kv260_blinking_led_ps").await {
         Ok((result, slot)) => {
             println!("✓ Load firmware: result={}, slot={}", result, slot);
             if result {
@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n=== Testing Device Operations ===");
     
     // Try to open a UIO device
-    match client.open_uio("uio0".to_string(), 4).await {
+    match client.open_uio("uio0", 4).await {
         Ok((result, id)) => {
             println!("✓ Open UIO: result={}, id={}", result, id);
             if result {
@@ -106,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Test UDMABUF operations
     println!("\n=== Testing UDMABUF Operations ===");
-    match client.open_udmabuf("udmabuf0".to_string(), true, 1).await {
+    match client.open_udmabuf("udmabuf0", true, 1).await {
         Ok((result, id)) => {
             println!("✓ Open UDMABUF: result={}, id={}", result, id);
             if result {

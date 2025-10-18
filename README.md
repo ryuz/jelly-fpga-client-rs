@@ -19,7 +19,6 @@ This library provides a complete Rust interface to the Jelly FPGA Server, suppor
 
 ### Device Management
 - `open_mmap(path, offset, size, unit)` - Open memory mapped device
-- `open_mmap_simple(path, offset, size)` - Open memory mapped device with default unit
 - `open_uio(name, unit)` - Open UIO device
 - `open_udmabuf(name, cache_enable, unit)` - Open UDMABUF device
 - `close(id)` - Close device
@@ -31,10 +30,15 @@ This library provides a complete Rust interface to the Jelly FPGA Server, suppor
 ### Memory and Register Access
 - Integer operations (signed/unsigned):
   - `write_mem_u/i(id, offset, data, size)` - Write to memory
-  - `write_mem_u64(id, offset, data)` - Write 64-bit unsigned to memory (convenience)
   - `read_mem_u/i(id, offset, size)` - Read from memory
   - `write_reg_u/i(id, reg, data, size)` - Write to register
   - `read_reg_u/i(id, reg, size)` - Read from register
+
+- Type-safe convenience methods:
+  - Memory operations: `write_mem_u8/u16/u32/u64`, `write_mem_i8/i16/i32/i64`
+  - Memory operations: `read_mem_u8/u16/u32/u64`, `read_mem_i8/i16/i32/i64`
+  - Register operations: `write_reg_u8/u16/u32/u64`, `write_reg_i8/i16/i32/i64`
+  - Register operations: `read_reg_u8/u16/u32/u64`, `read_reg_i8/i16/i32/i64`
 
 - Floating point operations:
   - `write_mem_f32/f64(id, offset, data)` - Write float to memory
@@ -173,6 +177,16 @@ The blinking LED example includes:
 - Device tree overlay loading
 - Memory-mapped I/O for LED control
 - Proper resource cleanup
+
+### Type-Safe Operations Example
+This example demonstrates the type-safe convenience methods for memory and register operations:
+- Tests all sized memory operations (u8/u16/u32/u64, i8/i16/i32/i64)
+- Tests all sized register operations
+- Shows proper error handling
+
+```bash
+cargo run --example type_safe_operations -- 10.72.141.82:8051
+```
 
 ## License
 

@@ -32,8 +32,8 @@ impl JellyFpgaClient {
     }
 
     /// Load firmware with name
-    pub async fn load(&mut self, name: String) -> Result<(bool, i32), tonic::Status> {
-        let request = Request::new(LoadRequest { name });
+    pub async fn load(&mut self, name: &str) -> Result<(bool, i32), tonic::Status> {
+        let request = Request::new(LoadRequest { name: name.to_string() });
         let response = self.client.load(request).await?;
         let inner = response.into_inner();
         Ok((inner.result, inner.slot))
@@ -54,7 +54,7 @@ impl JellyFpgaClient {
     }
 
     /// Upload firmware from data
-    pub async fn upload_firmware(&mut self, name: String, data: Vec<u8>) -> Result<bool, tonic::Status> {
+    pub async fn upload_firmware(&mut self, name: &str, data: Vec<u8>) -> Result<bool, tonic::Status> {
         use futures_core::stream::Stream;
         use std::pin::Pin;
         use std::task::{Context, Poll};
@@ -88,7 +88,7 @@ impl JellyFpgaClient {
         }
         
         let stream = DataStream {
-            name,
+            name: name.to_string(),
             data,
             chunk_size: 2 * 1024 * 1024, // 2MB chunks like Python version
             offset: 0,
@@ -99,7 +99,7 @@ impl JellyFpgaClient {
     }
 
     /// Upload firmware from file
-    pub async fn upload_firmware_file(&mut self, name: String, file_path: &str) -> Result<bool, tonic::Status> {
+    pub async fn upload_firmware_file(&mut self, name: &str, file_path: &str) -> Result<bool, tonic::Status> {
         let data = std::fs::read(file_path).map_err(|e| {
             tonic::Status::internal(format!("Failed to read file {}: {}", file_path, e))
         })?;
@@ -108,29 +108,29 @@ impl JellyFpgaClient {
     }
 
     /// Remove firmware
-    pub async fn remove_firmware(&mut self, name: String) -> Result<bool, tonic::Status> {
-        let request = Request::new(RemoveFirmwareRequest { name });
+    pub async fn remove_firmware(&mut self, name: &str) -> Result<bool, tonic::Status> {
+        let request = Request::new(RemoveFirmwareRequest { name: name.to_string() });
         let response = self.client.remove_firmware(request).await?;
         Ok(response.into_inner().result)
     }
 
     /// Load bitstream
-    pub async fn load_bitstream(&mut self, name: String) -> Result<bool, tonic::Status> {
-        let request = Request::new(LoadBitstreamRequest { name });
+    pub async fn load_bitstream(&mut self, name: &str) -> Result<bool, tonic::Status> {
+        let request = Request::new(LoadBitstreamRequest { name: name.to_string() });
         let response = self.client.load_bitstream(request).await?;
         Ok(response.into_inner().result)
     }
 
     /// Load device tree overlay
-    pub async fn load_dtbo(&mut self, name: String) -> Result<bool, tonic::Status> {
-        let request = Request::new(LoadDtboRequest { name });
+    pub async fn load_dtbo(&mut self, name: &str) -> Result<bool, tonic::Status> {
+        let request = Request::new(LoadDtboRequest { name: name.to_string() });
         let response = self.client.load_dtbo(request).await?;
         Ok(response.into_inner().result)
     }
 
     /// Convert DTS to DTB
-    pub async fn dts_to_dtb(&mut self, dts: String) -> Result<(bool, Vec<u8>), tonic::Status> {
-        let request = Request::new(DtsToDtbRequest { dts });
+    pub async fn dts_to_dtb(&mut self, dts: &str) -> Result<(bool, Vec<u8>), tonic::Status> {
+        let request = Request::new(DtsToDtbRequest { dts: dts.to_string() });
         let response = self.client.dts_to_dtb(request).await?;
         let inner = response.into_inner();
         Ok((inner.result, inner.dtb))
@@ -139,14 +139,14 @@ impl JellyFpgaClient {
     /// Convert bitstream to bin
     pub async fn bitstream_to_bin(
         &mut self,
-        bitstream_name: String,
-        bin_name: String,
-        arch: String,
+        bitstream_name: &str,
+        bin_name: &str,
+        arch: &str,
     ) -> Result<bool, tonic::Status> {
         let request = Request::new(BitstreamToBinRequest {
-            bitstream_name,
-            bin_name,
-            arch,
+            bitstream_name: bitstream_name.to_string(),
+            bin_name: bin_name.to_string(),
+            arch: arch.to_string(),
         });
         let response = self.client.bitstream_to_bin(request).await?;
         Ok(response.into_inner().result)
@@ -155,13 +155,13 @@ impl JellyFpgaClient {
     /// Open memory map
     pub async fn open_mmap(
         &mut self,
-        path: String,
+        path: &str,
         offset: u64,
         size: u64,
         unit: u64,
     ) -> Result<(bool, u32), tonic::Status> {
         let request = Request::new(OpenMmapRequest {
-            path,
+            path: path.to_string(),
             offset,
             size,
             unit,
@@ -171,19 +171,11 @@ impl JellyFpgaClient {
         Ok((inner.result, inner.id))
     }
 
-    /// Open memory map with default unit size (convenience method)
-    pub async fn open_mmap_simple(
-        &mut self,
-        path: &str,
-        offset: u64,
-        size: u64,
-    ) -> Result<(bool, u32), tonic::Status> {
-        self.open_mmap(path.to_string(), offset, size, 8).await
-    }
+
 
     /// Open UIO device
-    pub async fn open_uio(&mut self, name: String, unit: u64) -> Result<(bool, u32), tonic::Status> {
-        let request = Request::new(OpenUioRequest { name, unit });
+    pub async fn open_uio(&mut self, name: &str, unit: u64) -> Result<(bool, u32), tonic::Status> {
+        let request = Request::new(OpenUioRequest { name: name.to_string(), unit });
         let response = self.client.open_uio(request).await?;
         let inner = response.into_inner();
         Ok((inner.result, inner.id))
@@ -192,12 +184,12 @@ impl JellyFpgaClient {
     /// Open UDMABUF device
     pub async fn open_udmabuf(
         &mut self,
-        name: String,
+        name: &str,
         cache_enable: bool,
         unit: u64,
     ) -> Result<(bool, u32), tonic::Status> {
         let request = Request::new(OpenUdmabufRequest {
-            name,
+            name: name.to_string(),
             cache_enable,
             unit,
         });
@@ -274,6 +266,36 @@ impl JellyFpgaClient {
         Ok(response.into_inner().result)
     }
 
+    /// Write 8-bit unsigned integer to memory (convenience method)
+    pub async fn write_mem_u8(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: u8,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_u(id, offset, data as u64, 1).await
+    }
+
+    /// Write 16-bit unsigned integer to memory (convenience method)
+    pub async fn write_mem_u16(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: u16,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_u(id, offset, data as u64, 2).await
+    }
+
+    /// Write 32-bit unsigned integer to memory (convenience method)
+    pub async fn write_mem_u32(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: u32,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_u(id, offset, data as u64, 4).await
+    }
+
     /// Write 64-bit unsigned integer to memory (convenience method)
     pub async fn write_mem_u64(
         &mut self,
@@ -302,6 +324,46 @@ impl JellyFpgaClient {
         Ok(response.into_inner().result)
     }
 
+    /// Write 8-bit signed integer to memory (convenience method)
+    pub async fn write_mem_i8(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: i8,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_i(id, offset, data as i64, 1).await
+    }
+
+    /// Write 16-bit signed integer to memory (convenience method)
+    pub async fn write_mem_i16(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: i16,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_i(id, offset, data as i64, 2).await
+    }
+
+    /// Write 32-bit signed integer to memory (convenience method)
+    pub async fn write_mem_i32(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: i32,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_i(id, offset, data as i64, 4).await
+    }
+
+    /// Write 64-bit signed integer to memory (convenience method)
+    pub async fn write_mem_i64(
+        &mut self,
+        id: u32,
+        offset: u64,
+        data: i64,
+    ) -> Result<bool, tonic::Status> {
+        self.write_mem_i(id, offset, data, 8).await
+    }
+
     /// Read unsigned integer from memory
     pub async fn read_mem_u(
         &mut self,
@@ -315,6 +377,45 @@ impl JellyFpgaClient {
         Ok((inner.result, inner.data))
     }
 
+    /// Read 8-bit unsigned integer from memory (convenience method)
+    pub async fn read_mem_u8(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, u8), tonic::Status> {
+        let (result, data) = self.read_mem_u(id, offset, 1).await?;
+        Ok((result, data as u8))
+    }
+
+    /// Read 16-bit unsigned integer from memory (convenience method)
+    pub async fn read_mem_u16(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, u16), tonic::Status> {
+        let (result, data) = self.read_mem_u(id, offset, 2).await?;
+        Ok((result, data as u16))
+    }
+
+    /// Read 32-bit unsigned integer from memory (convenience method)
+    pub async fn read_mem_u32(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, u32), tonic::Status> {
+        let (result, data) = self.read_mem_u(id, offset, 4).await?;
+        Ok((result, data as u32))
+    }
+
+    /// Read 64-bit unsigned integer from memory (convenience method)
+    pub async fn read_mem_u64(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, u64), tonic::Status> {
+        self.read_mem_u(id, offset, 8).await
+    }
+
     /// Read signed integer from memory
     pub async fn read_mem_i(
         &mut self,
@@ -326,6 +427,45 @@ impl JellyFpgaClient {
         let response = self.client.read_mem_i(request).await?;
         let inner = response.into_inner();
         Ok((inner.result, inner.data))
+    }
+
+    /// Read 8-bit signed integer from memory (convenience method)
+    pub async fn read_mem_i8(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, i8), tonic::Status> {
+        let (result, data) = self.read_mem_i(id, offset, 1).await?;
+        Ok((result, data as i8))
+    }
+
+    /// Read 16-bit signed integer from memory (convenience method)
+    pub async fn read_mem_i16(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, i16), tonic::Status> {
+        let (result, data) = self.read_mem_i(id, offset, 2).await?;
+        Ok((result, data as i16))
+    }
+
+    /// Read 32-bit signed integer from memory (convenience method)
+    pub async fn read_mem_i32(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, i32), tonic::Status> {
+        let (result, data) = self.read_mem_i(id, offset, 4).await?;
+        Ok((result, data as i32))
+    }
+
+    /// Read 64-bit signed integer from memory (convenience method)
+    pub async fn read_mem_i64(
+        &mut self,
+        id: u32,
+        offset: u64,
+    ) -> Result<(bool, i64), tonic::Status> {
+        self.read_mem_i(id, offset, 8).await
     }
 
     /// Write unsigned integer to register
@@ -346,6 +486,46 @@ impl JellyFpgaClient {
         Ok(response.into_inner().result)
     }
 
+    /// Write 8-bit unsigned integer to register (convenience method)
+    pub async fn write_reg_u8(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: u8,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_u(id, reg, data as u64, 1).await
+    }
+
+    /// Write 16-bit unsigned integer to register (convenience method)
+    pub async fn write_reg_u16(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: u16,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_u(id, reg, data as u64, 2).await
+    }
+
+    /// Write 32-bit unsigned integer to register (convenience method)
+    pub async fn write_reg_u32(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: u32,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_u(id, reg, data as u64, 4).await
+    }
+
+    /// Write 64-bit unsigned integer to register (convenience method)
+    pub async fn write_reg_u64(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: u64,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_u(id, reg, data, 8).await
+    }
+
     /// Write signed integer to register
     pub async fn write_reg_i(
         &mut self,
@@ -364,6 +544,46 @@ impl JellyFpgaClient {
         Ok(response.into_inner().result)
     }
 
+    /// Write 8-bit signed integer to register (convenience method)
+    pub async fn write_reg_i8(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: i8,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_i(id, reg, data as i64, 1).await
+    }
+
+    /// Write 16-bit signed integer to register (convenience method)
+    pub async fn write_reg_i16(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: i16,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_i(id, reg, data as i64, 2).await
+    }
+
+    /// Write 32-bit signed integer to register (convenience method)
+    pub async fn write_reg_i32(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: i32,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_i(id, reg, data as i64, 4).await
+    }
+
+    /// Write 64-bit signed integer to register (convenience method)
+    pub async fn write_reg_i64(
+        &mut self,
+        id: u32,
+        reg: u64,
+        data: i64,
+    ) -> Result<bool, tonic::Status> {
+        self.write_reg_i(id, reg, data, 8).await
+    }
+
     /// Read unsigned integer from register
     pub async fn read_reg_u(
         &mut self,
@@ -377,6 +597,45 @@ impl JellyFpgaClient {
         Ok((inner.result, inner.data))
     }
 
+    /// Read 8-bit unsigned integer from register (convenience method)
+    pub async fn read_reg_u8(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, u8), tonic::Status> {
+        let (result, data) = self.read_reg_u(id, reg, 1).await?;
+        Ok((result, data as u8))
+    }
+
+    /// Read 16-bit unsigned integer from register (convenience method)
+    pub async fn read_reg_u16(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, u16), tonic::Status> {
+        let (result, data) = self.read_reg_u(id, reg, 2).await?;
+        Ok((result, data as u16))
+    }
+
+    /// Read 32-bit unsigned integer from register (convenience method)
+    pub async fn read_reg_u32(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, u32), tonic::Status> {
+        let (result, data) = self.read_reg_u(id, reg, 4).await?;
+        Ok((result, data as u32))
+    }
+
+    /// Read 64-bit unsigned integer from register (convenience method)
+    pub async fn read_reg_u64(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, u64), tonic::Status> {
+        self.read_reg_u(id, reg, 8).await
+    }
+
     /// Read signed integer from register
     pub async fn read_reg_i(
         &mut self,
@@ -388,6 +647,45 @@ impl JellyFpgaClient {
         let response = self.client.read_reg_i(request).await?;
         let inner = response.into_inner();
         Ok((inner.result, inner.data))
+    }
+
+    /// Read 8-bit signed integer from register (convenience method)
+    pub async fn read_reg_i8(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, i8), tonic::Status> {
+        let (result, data) = self.read_reg_i(id, reg, 1).await?;
+        Ok((result, data as i8))
+    }
+
+    /// Read 16-bit signed integer from register (convenience method)
+    pub async fn read_reg_i16(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, i16), tonic::Status> {
+        let (result, data) = self.read_reg_i(id, reg, 2).await?;
+        Ok((result, data as i16))
+    }
+
+    /// Read 32-bit signed integer from register (convenience method)
+    pub async fn read_reg_i32(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, i32), tonic::Status> {
+        let (result, data) = self.read_reg_i(id, reg, 4).await?;
+        Ok((result, data as i32))
+    }
+
+    /// Read 64-bit signed integer from register (convenience method)
+    pub async fn read_reg_i64(
+        &mut self,
+        id: u32,
+        reg: u64,
+    ) -> Result<(bool, i64), tonic::Status> {
+        self.read_reg_i(id, reg, 8).await
     }
 
     /// Write 32-bit float to memory

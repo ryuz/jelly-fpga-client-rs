@@ -20,6 +20,10 @@ path = "examples/comprehensive_test.rs"
 name = "test_blinking_led"
 path = "examples/test_blinking_led.rs"
 
+[[example]]
+name = "type_safe_operations"
+path = "examples/type_safe_operations.rs"
+
 [dependencies]
 tonic = "0.12"
 prost = "0.13"
