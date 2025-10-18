@@ -1,0 +1,31 @@
+[package]
+name = "jelly-fpga-client"
+version = "0.1.0"
+edition = "2021"
+description = "A Rust gRPC client library for Jelly FPGA Server"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ryuz/jelly-fpga-client-rs"
+keywords = ["fpga", "grpc", "embedded", "hardware"]
+categories = ["hardware-support", "api-bindings"]
+
+[[example]]
+name = "basic_usage"
+path = "examples/basic_usage.rs"
+
+[[example]]
+name = "comprehensive_test"
+path = "examples/comprehensive_test.rs"
+
+[[example]]
+name = "test_blinking_led"
+path = "examples/test_blinking_led.rs"
+
+[dependencies]
+tonic = "0.12"
+prost = "0.13"
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
+tokio-stream = "0.1"
+futures-core = "0.3"
+
+[build-dependencies]
+tonic-build = "0.12"
