@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("Usage: {} <target_address>", args[0]);
-        eprintln!("Example: {} 10.72.141.82:8051", args[0]);
+        eprintln!("Example: {} 127.0.0.1:8051", args[0]);
         std::process::exit(1);
     }
     

@@ -11,6 +11,8 @@ This library provides a complete Rust interface to the Jelly FPGA Server, suppor
 - `load(name)` - Load firmware by name
 - `unload(slot)` - Unload firmware from slot
 - `unload_all()` - Unload all firmware (convenience method)
+- `register_accel(accel_name, bin_file, dtbo_file, json_file, overwrite)` - Register accelerator package
+- `unregister_accel(accel_name)` - Unregister accelerator package
 - `upload_firmware(name, data)` - Upload firmware from byte data
 - `upload_firmware_file(name, file_path)` - Upload firmware from file
 - `remove_firmware(name)` - Remove firmware
@@ -167,7 +169,7 @@ This example demonstrates a complete workflow similar to the Python `test_blinki
 cp /path/to/kv260_blinking_led_ps.bit examples/
 
 # Run the example with target server address
-cargo run --example test_blinking_led -- 10.72.141.82:8051
+cargo run --example test_blinking_led -- 127.0.0.1:8051
 ```
 
 The blinking LED example includes:
@@ -185,7 +187,7 @@ This example demonstrates the type-safe convenience methods for memory and regis
 - Shows proper error handling
 
 ```bash
-cargo run --example type_safe_operations -- 10.72.141.82:8051
+cargo run --example type_safe_operations -- 127.0.0.1:8051
 ```
 
 ## License

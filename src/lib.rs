@@ -53,6 +53,35 @@ impl JellyFpgaClient {
         self.unload(0).await
     }
 
+    /// Register accelerator package
+    pub async fn register_accel(
+        &mut self,
+        accel_name: &str,
+        bin_file: &str,
+        dtbo_file: &str,
+        json_file: Option<&str>,
+        overwrite: bool,
+    ) -> Result<bool, tonic::Status> {
+        let request = Request::new(RegisterAccelRequest {
+            accel_name: accel_name.to_string(),
+            bin_file: bin_file.to_string(),
+            dtbo_file: dtbo_file.to_string(),
+            json_file: json_file.unwrap_or("").to_string(),
+            overwrite,
+        });
+        let response = self.client.register_accel(request).await?;
+        Ok(response.into_inner().result)
+    }
+
+    /// Unregister accelerator package
+    pub async fn unregister_accel(&mut self, accel_name: &str) -> Result<bool, tonic::Status> {
+        let request = Request::new(UnregisterAccelRequest {
+            accel_name: accel_name.to_string(),
+        });
+        let response = self.client.unregister_accel(request).await?;
+        Ok(response.into_inner().result)
+    }
+
     /// Upload firmware from data
     pub async fn upload_firmware(&mut self, name: &str, data: Vec<u8>) -> Result<bool, tonic::Status> {
         use futures_core::stream::Stream;
