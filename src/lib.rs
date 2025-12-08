@@ -181,6 +181,35 @@ impl JellyFpgaClient {
         Ok(response.into_inner().result)
     }
 
+    /// Load remote processor firmware
+    pub async fn load_remoteproc(
+        &mut self,
+        remoteproc_id: u64,
+        elf_name: &str,
+    ) -> Result<bool, tonic::Status> {
+        let request = Request::new(LoadRemoteprocRequest {
+            remoteproc_id,
+            elf_name: elf_name.to_string(),
+        });
+        let response = self.client.load_remoteproc(request).await?;
+        Ok(response.into_inner().result)
+    }
+
+    /// Start remote processor
+    pub async fn start_remoteproc(&mut self, remoteproc_id: u64) -> Result<bool, tonic::Status> {
+        let request = Request::new(RemoteprocIdRequest { remoteproc_id });
+        let response = self.client.start_remoteproc(request).await?;
+        Ok(response.into_inner().result)
+    }
+
+    /// Stop remote processor
+    pub async fn stop_remoteproc(&mut self, remoteproc_id: u64) -> Result<bool, tonic::Status> {
+        let request = Request::new(RemoteprocIdRequest { remoteproc_id });
+        let response = self.client.stop_remoteproc(request).await?;
+        Ok(response.into_inner().result)
+    }
+
+
     /// Open memory map
     pub async fn open_mmap(
         &mut self,
