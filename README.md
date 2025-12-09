@@ -81,12 +81,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Reset result: {}", reset_result);
 
     // Load firmware
-    let (load_result, slot) = client.load("my_firmware".to_string()).await?;
+    let (load_result, slot) = client.load("my_firmware").await?;
     if load_result {
         println!("Firmware loaded in slot: {}", slot);
         
         // Open UIO device
-        let (open_result, device_id) = client.open_uio("my_device".to_string(), 4).await?;
+        let (open_result, device_id) = client.open_uio("my_device", 4).await?;
         if open_result {
             // Write to register
             client.write_reg_u(device_id, 0x00, 0x12345678, 4).await?;
@@ -117,7 +117,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = JellyFpgaClient::connect("http://192.168.1.100:8051").await?;
     
     // Open UDMABUF for DMA operations
-    let (open_result, buf_id) = client.open_udmabuf("udmabuf0".to_string(), true, 1).await?;
+    let (open_result, buf_id) = client.open_udmabuf("udmabuf0", true, 1).await?;
     if open_result {
         // Write data to buffer
         let data = vec![0x01, 0x02, 0x03, 0x04];
