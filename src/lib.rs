@@ -24,6 +24,13 @@ impl JellyFpgaClient {
         Ok(JellyFpgaClient { client })
     }
 
+    /// Get server version
+    pub async fn get_version(&mut self) -> Result<String, tonic::Status> {
+        let request = Request::new(Empty {});
+        let response = self.client.get_version(request).await?;
+        Ok(response.into_inner().version)
+    }
+
     /// Reset the FPGA
     pub async fn reset(&mut self) -> Result<bool, tonic::Status> {
         let request = Request::new(ResetRequest {});
